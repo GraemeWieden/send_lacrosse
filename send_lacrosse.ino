@@ -4,8 +4,11 @@ RCSwitch mySwitch = RCSwitch();
 byte ledPort = 13; // digital pin for LED
 byte nibbles[10]; // array to hold the nibbles
 char encodedString[41]; // allow additional byte for null terminator
+
+float testTemperature = -20.0;
     
-void setup() {
+void setup() 
+{
 
   Serial.begin(9600);
   pinMode(ledPort, OUTPUT);    
@@ -21,40 +24,36 @@ void setup() {
   
   // Optional set number of transmission repetitions.
   mySwitch.setRepeatTransmit(3);
-  
-  buildNibbles(2, 2, 34.5);
+}
 
+void loop() 
+{
+  // I'm not really sure what the Sensor Address values are supposed to represent
+  // Possibly a house code and a channel, although they just resolve to an integer
+  
+  buildNibbles(1, 2, testTemperature);
   zeroString(encodedString, 40); // set all the bits to zero
   buildPayload(encodedString);
 
+  Serial.print("Sending TX3 temperature : ");
+  Serial.println(testTemperature);  
+  Serial.print(" Encoded: ");
   Serial.println(encodedString);
   notString(encodedString, 40);
+  Serial.print("Inverted: ");
   Serial.println(encodedString);
   rightShiftString(encodedString, 40);
+  Serial.print(" Shifted: ");
   Serial.println(encodedString);
-}
-
-void loop() {
-
-  /* Same switch as above, but using binary code */
-  // 1010 0000 0001 0010 0000 0000 0001 0001 0001 0000
-  //mySwitch.send("1010000000010010000000000001000100010000"); // what i want to send
-  //mySwitch.send("0101111111101101111111111110111011101111"); // invert
-  //mySwitch.send("0010111111110110111111111111011101110111"); // drop last bit and add leading bit
   
-  //mySwitch.send("0010111111110110111101111111011101110111"); // add parity
-                 //00101111111101101111011111110111011101110
-
   mySwitch.send(encodedString);
 
-  //"0 0101 1111 1110 1101 1110 1111 1110 1110 1110 111x"
-  // 0 0101 1111 1110 1101 1110 1111 1110 1110 1110 1110
-
-
-
+  testTemperature += 1.3; // just some arbitrary incrementer for testing
+  
+  if(testTemperature > 50)
+   testTemperature = -20.0;
+  
   blinkLed();
-
-
   delay(5000);
 }
 
